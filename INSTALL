@@ -1,0 +1,25 @@
+INSTALLATION
+
+To install this module, run the following commands:
+
+    perl Makefile.PL
+    make
+    make install
+
+CONFIGURE
+
+Add 'Filter::CheckMessageId' to the list of mail plugins in RT_SiteConfig.pm.
+
+Restart web server.
+
+If you are running RT-3.8 you will need to use slightly different syntax
+
+Set(@MailPlugins, qw(CheckMessageId));
+
+You will also need to add RT::Extension::TicketFromMessageId to your
+Plugins list.
+
+Set(@Plugins,(qw(RT::Extension::TicketFromMessageId)))
+
+Enjoy.
+
