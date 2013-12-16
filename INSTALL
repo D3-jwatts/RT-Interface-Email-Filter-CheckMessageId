@@ -1,4 +1,4 @@
-INSTALLATION
+= INSTALLATION =
 
 To install this module, run the following commands:
 
@@ -6,7 +6,7 @@ To install this module, run the following commands:
     make
     make install
 
-CONFIGURE
+= CONFIGURE =
 
 Add 'Filter::CheckMessageId' to the list of mail plugins in RT_SiteConfig.pm.
 
@@ -16,10 +16,15 @@ If you are running RT-3.8 you will need to use slightly different syntax
 
 Set(@MailPlugins, qw(CheckMessageId));
 
-You will also need to add RT::Extension::TicketFromMessageId to your
-Plugins list.
+= PERFORMANCE ISSUE =
 
-Set(@Plugins,(qw(RT::Extension::TicketFromMessageId)))
+This plugin search messages Id in column 'messageid' of the table 'attachments'.
+It is strongly recommanded to create an index to speed-up the search in this
+table.
+
+Connect to the database:
+
+CREATE INDEX messageid_idx ON attachments (messageid);
 
 Enjoy.
 

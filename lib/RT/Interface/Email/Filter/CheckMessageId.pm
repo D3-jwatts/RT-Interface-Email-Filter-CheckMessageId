@@ -1,6 +1,6 @@
 package RT::Interface::Email::Filter::CheckMessageId;
 
-our $VERSION = '0.1';
+our $VERSION = '0.2';
 
 use warnings;
 use strict;
@@ -28,11 +28,32 @@ new ticket.
 With This extension, RT will find the C<In-Reply-To> header tag match with the
 ticket's attachement and then the C<Friend>'s mail will be added as comment.
 
-=head1 INSTALLATION AND CONFIGURATION
+=head1 CONFIGURATION
 
-None at time
+=head2 $ChkMsgIdNoIfStatus
+
+If set ticket in state listed are ignore letting a new
+bug to be open.
+
+C<Initial> keywords will match all initial state (C<new>).
+
+C<Active> keywords will match all inactive state (C<open>).
+
+C<Inactive> keywords will match all inactive state (C<rejected>, C<resolved>).
+
+=head1 PERFORMANCE
+
+This plugin search messages Id in column 'messageid' of the table 'attachments'.
+It is strongly recommanded to create an index to speed-up the search in this
+table.
+
+Connect to the database:
+
+    CREATE INDEX messageid_idx ON attachments (messageid);
 
 =cut
+
+=head1 FUNCTIONS
 
 =head2 ApplyBeforeDecode
 
@@ -46,6 +67,7 @@ sub _Find_Ticket_from_MsgID {
         CurrentUser => undef,
         @_
     );
+    my @NoIfStatus = split(/[\s,]+/, RT::Config->Get('ChkMsgIdNoIfStatus') || '');
 
     my %attachmentids;
     foreach my $msgid (@{ $args{MsgID} }) {
@@ -57,8 +79,35 @@ sub _Find_Ticket_from_MsgID {
 
         while (my $attachment = $attachments->Next) {
             my $trans = $attachment->TransactionObj or next;
+            $trans->ObjectType eq 'RT::Ticket' or next;
             my $objid = $trans->ObjectId or next;
-            $attachmentids{$attachment->TransactionObj->ObjectId} = 1;
+            my $ticketid = $trans->ObjectId;
+
+            if (@NoIfStatus) {
+            my $TicketObj = RT::Ticket->new( $RT::SystemUser );
+            $TicketObj->Load( $ticketid );
+            
+            if (grep { $_ eq $TicketObj->Status } @NoIfStatus) {
+                next;
+            }
+            if ((grep { $_ eq 'Initial' } @NoIfStatus) &&
+                $TicketObj->QueueObj
+                    ->Lifecycle->IsInitial($TicketObj->Status)) {
+                next; 
+            }
+            if ((grep { $_ eq 'Active' } @NoIfStatus) &&
+                $TicketObj->QueueObj
+                    ->Lifecycle->IsActive($TicketObj->Status)) {
+                next; 
+            }
+            if ((grep { $_ eq 'Inactive' } @NoIfStatus) &&
+                $TicketObj->QueueObj
+                    ->Lifecycle->IsInactive($TicketObj->Status)) {
+                next;
+            }
+            }
+            
+            $attachmentids{$ticketid} = 1;
         }
     }
     my ($ticketid, @others) = keys %attachmentids;
@@ -101,8 +150,17 @@ sub ApplyBeforeDecode {
 
     # If we have allready a ticket or we can find ticket number in subject
     # ignore mail header:
-    if (RT::Interface::Email::ExtractTicketId($args{'Message'})) {
-        return ( 0 );
+    if (RT::Interface::Email->can('ExtractTicketId')) {
+        if (RT::Interface::Email::ExtractTicketId($args{'Message'})) {
+            return ( 0 );
+        }
+    } else {
+        # RT 4.0.6 and earlier does not have ExtractTicketId
+        my $subject = $args{'Message'}->head->get('Subject') || '';
+        chomp $subject;
+        if (RT::Interface::Email::ParseTicketId($subject)) {
+            return ( 0 );
+        }
     }
 
     # We have 'In-Reply-To' header:
@@ -168,7 +226,11 @@ sub GetCurrentUser {
 
 =head1 AUTHOR
 
-Olivier Thauvin <nanardon@nanardon.zarb.org>
+  Olivier Thauvin <nanardon@nanardon.zarb.org>
+
+=head1 CONTRIBUTORS
+
+  Asa Gage <agage at nextjump.com>
 
 =head1 LICENCE AND COPYRIGHT
 
