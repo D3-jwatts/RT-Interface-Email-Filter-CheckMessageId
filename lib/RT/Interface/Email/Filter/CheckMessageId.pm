@@ -205,28 +205,6 @@ sub ApplyBeforeDecode {
     return ( 0 );
 }
 
-=head2 GetCurrentUser
-
-Return current user.
-
-Does nothing, this method is here to allow the plugin to be detected
-
-=cut
-
-sub GetCurrentUser {
-    my %args = (
-        Message       => undef,
-        RawMessageRef => undef,
-        CurrentUser   => undef,
-        AuthLevel     => undef,
-        Action        => undef,
-        Ticket        => undef,
-        Queue         => undef,
-        @_
-    );
-    return ( $args{'CurrentUser'}, $args{'AuthLevel'} );
-}
-
 =head1 AUTHOR
 
   Olivier Thauvin <nanardon@nanardon.zarb.org>
