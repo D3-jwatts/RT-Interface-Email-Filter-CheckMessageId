@@ -209,6 +209,7 @@ sub BeforeDecode {
 =head1 CONTRIBUTORS
 
   Asa Gage <agage at nextjump.com>
+  Josh Watts <jwatts@d3engineering.com>
 
 =head1 LICENCE AND COPYRIGHT
 
