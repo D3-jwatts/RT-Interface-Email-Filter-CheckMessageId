@@ -1,5 +1,8 @@
 Revision history for RT-Interface-Email-Filter-CheckMessageId
 
+0.2.1 Sat Jan 23 13:17:35 EST 2021
+* Update for RT 5.0 (Josh Watts <jwatts@d3engineering.com>)
+
 0.2 Mon Dec 16 20:18:12 CET 2013
 * add ChkMsgIdNoIfStatus option
 * Fix documentation

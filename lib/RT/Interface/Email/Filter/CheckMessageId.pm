@@ -3,7 +3,7 @@ package RT::Interface::Email::Filter::CheckMessageId;
 use Role::Basic 'with';
 with 'RT::Interface::Email::Role';
 
-our $VERSION = '0.2';
+our $VERSION = '0.2.1';
 
 use warnings;
 use strict;
