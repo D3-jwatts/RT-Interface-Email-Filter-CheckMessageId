@@ -58,7 +58,7 @@ Connect to the database:
 
 =head1 FUNCTIONS
 
-=head2 ApplyBeforeDecode
+=head2 BeforeDecode
 
 Modify header subject to include C<[... #n]> ticket reference.
 
@@ -139,15 +139,12 @@ sub _Redefine_Subjet {
 
 }
 
-sub ApplyBeforeDecode {
+sub BeforeDecode {
     my %args = (
         Message       => undef,
         RawMessageRef => undef,
-        CurrentUser   => undef,
-        AuthLevel     => undef,
-        Action        => undef,
-        Ticket        => undef,
         Queue         => undef,
+        Actions       => undef,
         @_
     );
 
